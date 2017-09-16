@@ -3,6 +3,10 @@
 #
 
 class base::tmux {
+  package { 'tmux':
+    ensure  => latest,
+  }
+
   File {
     owner   => 'root',
     group   => 'root',
@@ -24,6 +28,7 @@ class base::tmux {
 
   file { '/usr/local/bin/tmux.sh':
     ensure  => present,
+    mode    => "0755",
     source  => "puppet:///modules/${module_name}/tmux/tmux.sh",
   }
 
