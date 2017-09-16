@@ -33,7 +33,7 @@ class base::tmux {
   }
 
   # Set some aliases
-  bash::alias { 'tmux':
+  bash::alias { 'titi':
     content => '/usr/local/bin/tmux.sh ',
   }
 }
