@@ -1,0 +1,39 @@
+server {
+    server_name photos.jlejeune.eu;
+    listen 80;
+    access_log off;
+
+    # force https 
+    return 301 https://$host$request_uri;
+}
+
+server {
+    server_name photos.jlejeune.eu;
+    listen 443 ssl;
+    access_log /var/log/nginx/photos.jlejeune.eu_access.log;
+    error_log  /var/log/nginx/photos.jlejeune.eu_error.log;
+    
+    # ssl certificates
+    ssl_certificate /etc/letsencrypt/live/jlejeune/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/jlejeune/privkey.pem;
+
+    location ~ /.well-known {
+      root /var/www/html;
+      allow all;
+      location ~ /.well-known/acme-challenge/(.*) {
+        add_header Content-Type application/jose+json;
+      }
+    }
+
+    # proxy conf
+    location / {
+        add_header Front-End-Https on;
+        add_header Cache-Control " public, must-revalidate";
+        add_header Strict-Transport-Security "max-age=2592000; includeSubdomains";
+        include /etc/nginx/proxy_params;
+        proxy_pass https://192.168.1.50;
+    }
+
+    include drop.conf;
+    include ssl.conf;
+}

@@ -1,0 +1,54 @@
+#
+# Default server configuration
+#
+server {
+    server_name www.jlejeune.eu;
+    listen 80 default;
+    access_log off;
+
+    # force https 
+    return 301 https://$host$request_uri;
+}
+
+server {
+    server_name www.jlejeune.eu;
+    listen 443 ssl;
+    access_log /var/log/nginx/www.jlejeune.eu_access.log;
+    error_log /var/log/nginx/www.jlejeune.eu_error.log;
+    index index.html index.htm index.php;
+
+    root /var/www/html;
+
+    ssl_certificate /etc/letsencrypt/live/jlejeune/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/jlejeune/privkey.pem;
+
+    location ~ /.well-known {
+      allow all;
+      location ~ /.well-known/acme-challenge/(.*) {
+        add_header Content-Type application/jose+json;
+      }
+    }
+
+    location / {
+        # First attempt to serve request as file, then
+        # as directory, then fall back to displaying a 404.
+        try_files $uri $uri/ =404 /index.html;
+    }
+
+    location ~ \.php$ {
+        #fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        # NOTE: You should have "cgi.fix_pathinfo = 0;" in php.ini
+        
+        # With php5-cgi alone:
+        #fastcgi_pass 127.0.0.1:9000;
+        #fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        
+        # With php5-fpm:
+        fastcgi_pass unix:/var/run/php5-fpm.sock;
+        fastcgi_index index.php;
+        include fastcgi_params;
+    }
+
+    include drop.conf;
+    include ssl.conf;
+}
